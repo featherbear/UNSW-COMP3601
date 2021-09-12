@@ -13,4 +13,4 @@ options = ""
 +++
 yay!
 
-![](/UNSW-COMP3601/uploads/20210912-rr-ff.jpg)
+![](/uploads/20210912-rr-ff.jpg)
