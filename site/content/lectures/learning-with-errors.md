@@ -54,7 +54,8 @@ Is symmetric more secure?
 
 # Learning with Errors
 
-> Example: [asecuritysite.com/encryption/lwe2](https://asecuritysite.com/encryption/lwe2 "https://asecuritysite.com/encryption/lwe2")
+> Example: [asecuritysite.com/encryption/lwe2](https://asecuritysite.com/encryption/lwe2 "https://asecuritysite.com/encryption/lwe2")  
+> More: [cims.nyu.edu/\~regev/papers/lwesurvey.pdf](https://cims.nyu.edu/\~regev/papers/lwesurvey.pdf "https://cims.nyu.edu/~regev/papers/lwesurvey.pdf")
 
 TODO: STUFF HERE
 
