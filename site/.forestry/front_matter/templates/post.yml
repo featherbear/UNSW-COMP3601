@@ -40,4 +40,4 @@ fields:
     name: options
     label: options
 pages:
-- site/content/test-page.md
+- site/content/lectures/learning-with-errors.md
