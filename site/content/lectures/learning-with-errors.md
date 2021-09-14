@@ -54,15 +54,20 @@ Is symmetric more secure?
 
 # Learning with Errors
 
+> Example: [asecuritysite.com/encryption/lwe2](https://asecuritysite.com/encryption/lwe2 "https://asecuritysite.com/encryption/lwe2")
+
 TODO: STUFF HERE
 
 ## Key Generation
 
-**A** calculates two data elements `u` and `v`, from a message `V`
+Decide on `n`, `m` and `q`
+
+> **A** calculates two data elements `u` and `v`, from a message `m`
 
 TODO: STUFF HERE
 
-* **B** receives `u` and `v`
+> **B** receives `u` and `v`
+
 * Calculates `D = (v-u.s) mod q`
   * If `D < q/2` then message is 0
   * If `D > q/2`   then message is 1
@@ -79,7 +84,8 @@ TODO: STUFF HERE
 
 #### If there is no error
 
-If there is no error vector, the other party D will be exactly `q/2` or exactly `0`.
+If there is no error vector, the other party D will be exactly `q/2` or exactly `0`.  
+**With an introduced error vector, this algorithm becomes quantum robust.**
 
 ***
 
