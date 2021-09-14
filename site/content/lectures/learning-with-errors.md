@@ -22,13 +22,13 @@ options = ""
 
 ### Symmetric Key Crypto
 
-* A shared key $K_s$ is used
+* A shared key K_s is used
 
 ### Asymmetric Key Crypto
 
 * Two keys are used
-  * Public key $K_pub$
-  * Private key $K_priv$
+  * Public key K_pub
+  * Private key K_priv
 
 ## Analysis of AES-128 (Advanced Encryption Standard)
 
