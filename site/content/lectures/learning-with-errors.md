@@ -12,7 +12,7 @@ enable = false
 options = ""
 
 +++
-# Learning With Errors | Quantum Cryptography
+# Quantum Cryptography
 
 * Cryptography uses complex/hard to reverse calculations to encrypt data
   * For example ECC (Elliptic Curve Cryptography) and AES (Advanced Encryption Standard)
@@ -49,3 +49,7 @@ Quantum computing can crack RSA-2048 in 28.6 hours
 Is symmetric more secure?
 
 > Grover's Algorithm - The brute force attack time is roughly its square root of its key length. 
+
+***
+
+# Learning with Errors
