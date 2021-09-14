@@ -69,8 +69,8 @@ Evaluate `B = (A * S) / q + e`
 
 > 
 >
-> ![](uploads/20210914-snipaste_2021-09-14_14-11-21.jpg)  
-> ![](uploads/20210914-snipaste_2021-09-14_14-14-17.jpg)
+> ![](/uploads/20210914-snipaste_2021-09-14_14-11-21.jpg)  
+> ![](/uploads/20210914-snipaste_2021-09-14_14-14-17.jpg)
 
 * Given an A,B pair, can we find S?
 
@@ -82,7 +82,7 @@ Note: Used to encrypt **one bit at a time**
   * `A` and `B` are derived from some values `n`, `m` and a shared `q`
 * `S` is the private key, only known by Bob
 
-![](uploads/20210914-snipaste_2021-09-14_14-18-52.jpg)
+![](/uploads/20210914-snipaste_2021-09-14_14-18-52.jpg)
 
 ## Encryption
 
@@ -96,7 +96,7 @@ Note: Used to encrypt **one bit at a time**
   * If `S` is a scalar, then `u` is also a scalar
   * If `S` is a column vector, then `u` is a row vector
 
-![](uploads/20210914-snipaste_2021-09-14_14-27-14.jpg)
+![](/uploads/20210914-snipaste_2021-09-14_14-27-14.jpg)
 
 ## Decryption
 
@@ -108,13 +108,13 @@ Note: Used to encrypt **one bit at a time**
 
 ### Example
 
-![](uploads/20210914-snipaste_2021-09-14_13-05-45.png)  
-![](uploads/20210914-snipaste_2021-09-14_13-06-37.jpg)  
-![](uploads/20210914-snipaste_2021-09-14_13-07-49.jpg)
+![](/uploads/20210914-snipaste_2021-09-14_13-05-45.png)  
+![](/uploads/20210914-snipaste_2021-09-14_13-06-37.jpg)  
+![](/uploads/20210914-snipaste_2021-09-14_13-07-49.jpg)
 
 #### If M=0
 
-![](uploads/20210914-snipaste_2021-09-14_13-08-47.jpg)
+![](/uploads/20210914-snipaste_2021-09-14_13-08-47.jpg)
 
 #### If there is no error
 
@@ -127,7 +127,7 @@ If there is no error vector, the other party D will be exactly `q/2` or exactly 
 
 Ring LWE is inefficient because we need to store A, which consumes significant memory and matrix multiplications.
 
-![](uploads/20210914-snipaste_2021-09-14_13-13-14.jpg)  
+![](/uploads/20210914-snipaste_2021-09-14_13-13-14.jpg)  
 256KB needed to encrypt just a few bits!?!?
 
 > What if we use a polynomial X?
