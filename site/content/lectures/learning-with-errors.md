@@ -58,7 +58,7 @@ TODO: STUFF HERE
 
 ## Key Generation
 
-**A** generates a message, and generates 
+**A** calculates two data elements `u` and `v`, from a message `V`
 
 TODO: STUFF HERE
 
