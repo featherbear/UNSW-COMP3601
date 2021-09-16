@@ -12,3 +12,6 @@ enable = false
 options = ""
 
 +++
+# Haha add numbers together
+
+# Karatsuba's Fast Multiplication Algorithm
