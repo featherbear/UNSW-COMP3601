@@ -15,3 +15,5 @@ options = ""
 # Haha add numbers together
 
 # Karatsuba's Fast Multiplication Algorithm
+
+# Booth's Multiplication Algorithm
