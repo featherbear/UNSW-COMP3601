@@ -47,7 +47,7 @@ Quantum computing can crack RSA-2048 in 28.6 hours
 
 Is symmetric more secure?
 
-> Grover's Algorithm - The brute force attack time is roughly its square root of its key length. 
+> Grover's Algorithm - The brute force attack time is roughly its square root of its key length.
 
 ***
 
@@ -67,8 +67,6 @@ Pick `e` from the Gaussian distribution
 
 Evaluate `B = (A * S) / q + e`
 
-> 
->
 > ![](/uploads/20210914-snipaste_2021-09-14_14-11-21.jpg)  
 > ![](/uploads/20210914-snipaste_2021-09-14_14-14-17.jpg)
 
@@ -90,7 +88,7 @@ Note: Used to encrypt **one bit at a time**
 >
 > Reminder: Encryption happens **per bit**
 
-* Samples around `n/4` pairs 
+* Samples around `n/4` pairs
   * `u = (sum of A samples) mod q`
   * `v = (sum of B samples - M*q/2) mod q`
   * If `S` is a scalar, then `u` is also a scalar
@@ -120,6 +118,8 @@ Note: Used to encrypt **one bit at a time**
 
 If there is no error vector, the other party D will be exactly `q/2` or exactly `0`.  
 **With an introduced error vector, this algorithm becomes quantum robust.**
+
+Read: Short Integer Solution problem
 
 ***
 
