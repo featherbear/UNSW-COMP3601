@@ -22,6 +22,29 @@ options = ""
 
 # Karatsuba's Fast Multiplication Algorithm
 
+```python3
+def karatsuba(x,y):
+    if x < 10 or y < 10:
+        return x*y
+    else:
+        n = max(len(str(x)),len(str(y)))
+        mid = int(n/2) 
+        power = 10**mid
+
+        a = x // power
+        b = x % power
+        c = y // power
+        d = y % power
+
+        print(a, b, c, d)
+
+        ac = karatsuba(a,c)
+        bd = karatsuba(b,d)
+
+        acpbd = karatsuba(a+b,c+d) - ac - bd
+        return ac*(power**2) + bd + (acpbd*power)
+```
+
 # Schönhage–Strassen Multiplication Algorithm
 
 # Booth's Multiplication Algorithm
