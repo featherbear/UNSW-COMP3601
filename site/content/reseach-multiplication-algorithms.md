@@ -22,6 +22,10 @@ options = ""
 
 # Karatsuba's Fast Multiplication Algorithm
 
+YouTube - https://www.youtube.com/watch?v=JCbZayFr9RE
+
+![](/uploads/20210917-snipaste_2021-09-18_01-48-25.jpg)
+
 ```python3
 def karatsuba(x,y):
     if x < 10 or y < 10:
