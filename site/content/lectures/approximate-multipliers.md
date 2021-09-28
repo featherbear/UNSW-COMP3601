@@ -130,7 +130,8 @@ Then, `log(A) = K + X`
 
 e.g `0.00010` becomes `1.00010`
 
-![](/uploads/20210928-snipaste_2021-09-28_17-36-07.jpg)
+![](/uploads/20210928-snipaste_2021-09-28_17-36-07.jpg)  
+^ When x1 + x2 >= 1, we add 1 to the sum of k
 
 > Brain Dump: Approximately multiplying two numbers involves adding their MSB positions  
 > Yeah, makes sense.
@@ -189,7 +190,16 @@ If either integer is an exact power of two, there is zero error.
 
 Otherwise, looking at different profiles of our 3D error graph...
 
-![](/uploads/20210928-snipaste_2021-09-28_17-56-52.jpg)
+![](/uploads/20210928-snipaste_2021-09-28_18-00-24.jpg)
 
 * The profile is replicated in every power-of-two (pair of k1 and k2)
 * The error profile is scaled by 2^(k1+k2)
+
+![](/uploads/20210928-snipaste_2021-09-28_18-00-17.jpg)
+
+We can add this average error into our approximate product  
+![](/uploads/20210928-snipaste_2021-09-28_18-01-20.jpg)  
+Can approximate 0.08333 \~= 0.078125 = 2^-4 + 2^-6  
+  
+![](/uploads/20210928-snipaste_2021-09-28_18-05-33.jpg)  
+^ When x1 + x2 >= 1, we scale the average error down by half
