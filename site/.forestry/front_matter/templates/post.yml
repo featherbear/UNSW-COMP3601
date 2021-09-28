@@ -40,5 +40,6 @@ fields:
     name: options
     label: options
 pages:
+- site/content/lectures/approximate-multipliers.md
 - site/content/lectures/learning-with-errors.md
 - site/content/reseach-multiplication-algorithms.md
