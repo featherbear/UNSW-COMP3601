@@ -97,3 +97,68 @@ This approximation change halves the required time to compute.
 For additions of large numbers, the lower bits are not very significant (i.e. LSB) and do not dramatically affect the output
 
 ![](/uploads/20210928-snipaste_2021-09-28_16-48-19.jpg)
+
+## Approximate Log-based Multipliers
+
+> Recall that `log(AB) = log A + log B`
+>
+> So, `AB = antilog(log A + log B)`
+
+There are approximate log and antilog functions which help to simplify the computation
+
+### Mitchell's Algorithm (MA)
+
+> 1. Find the approximate log of inputs
+
+`K.XXX...`
+
+Where
+
+* `K` - Position of the leading 1 (as binary)
+* `XXX...` the rest of the bits
+
+Then, `log(A) = K + X`
+
+***
+
+> 2. Add the two logs
+
+***
+
+> 3. Extract the fractional bits and prepend a `1` bit (to the whole number)
+> 4. Scale -> Move the decimal `n` places to the right (where `n` is the result's whole number `Ka + Kb`
+
+e.g `0.00010` becomes `1.00010`
+
+![](/uploads/20210928-snipaste_2021-09-28_17-36-07.jpg)
+
+#### Example
+
+Input = 11 x 66
+
+11 (dec) = 1011 (bin)  
+66 (dec) = 1000010 (bin)
+
+**Step 1**  
+1011 -> 11.011    (First 1 is in position 3 (bin = 11))  
+1000010 -> 110.000010    (First 1 is in position 6 (bin = 110))
+
+**Step 2**  
+11\.011 + 110.000010  
+= 1001.011010
+
+**Step 3**  
+frac -> 0.011010  
+prepend 1 -> 1.011010  
+scale by 1001 (dec = 9) -> 1011010000
+
+**Result  
+**1011010000 = 620  
+11 x 66 = 726
+
+***
+
+![](/uploads/20210928-snipaste_2021-09-28_17-45-06.jpg)
+
+* LOD - Leading One Detector - Finds the position of the leading one
+* Barrel Shifter - Shift by N bits
