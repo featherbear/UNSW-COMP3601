@@ -203,3 +203,9 @@ Can approximate 0.08333 \~= 0.078125 = 2^-4 + 2^-6
   
 ![](/uploads/20210928-snipaste_2021-09-28_18-05-33.jpg)  
 ^ When x1 + x2 >= 1, we scale the average error down by half
+
+***
+
+***
+
+REALM (Reduced-Error Approximate Log-Based Integer Multiplier) For an even better error correction, instead of using a mean average correction - we could calculate the error for each region, and then use a lookup table to find the correct error.-
