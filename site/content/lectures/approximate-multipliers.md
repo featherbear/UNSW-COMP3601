@@ -80,3 +80,10 @@ This multiplication just becomes a combination of `AND` and `n`-bit adder circui
 * Dadda Tree Reduction
 
 # Approximate Multipliers
+
+There are different variations of adder and multiplier circuits, each which use have different logic area and delay complexities.  
+The previous example circuits can be classified as "exact circuits" - where their produced output is exactly the result of the input operation.
+
+**However sometimes we do not particularly need an exact output.** We can instead implement an approximate multiplier, which can possibly decrease the circuit complexity.
+
+> Aside | Error Resiliency - _Some algorithms are inherently error resilient, and are often used to treat or suppress noisy input - mitigating the effect of errors on the output result_
