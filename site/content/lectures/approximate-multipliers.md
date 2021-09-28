@@ -84,6 +84,16 @@ This multiplication just becomes a combination of `AND` and `n`-bit adder circui
 There are different variations of adder and multiplier circuits, each which use have different logic area and delay complexities.  
 The previous example circuits can be classified as "exact circuits" - where their produced output is exactly the result of the input operation.
 
-**However sometimes we do not particularly need an exact output.** We can instead implement an approximate multiplier, which can possibly decrease the circuit complexity.
+**However sometimes we do not particularly need an exact output (would be ideal though).** We can instead implement an approximate multiplier, which can possibly decrease the circuit complexity.
 
 > Aside | Error Resiliency - _Some algorithms are inherently error resilient, and are often used to treat or suppress noisy input - mitigating the effect of errors on the output result_
+
+### Example (Approximate Adder)
+
+Consider the case of a 6-bit adder circuit where the lower 3 bits were disconnected.  
+An error would be introduced if the last 3 bits had any data, however for any addition of two values > 2^3, there would be no error.  
+This approximation change halves the required time to compute.
+
+For additions of large numbers, the lower bits are not very significant (i.e. LSB) and do not dramatically affect the output
+
+![](/uploads/20210928-snipaste_2021-09-28_16-48-19.jpg)
