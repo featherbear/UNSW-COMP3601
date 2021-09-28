@@ -132,6 +132,9 @@ e.g `0.00010` becomes `1.00010`
 
 ![](/uploads/20210928-snipaste_2021-09-28_17-36-07.jpg)
 
+> Brain Dump: Approximately multiplying two numbers involves adding their MSB positions  
+> Yeah, makes sense.
+
 #### Example
 
 Input = 11 x 66
@@ -155,6 +158,8 @@ scale by 1001 (dec = 9) -> 1011010000
 **Result  
 **1011010000 = 620  
 11 x 66 = 726
+
+***
 
 ***
 
