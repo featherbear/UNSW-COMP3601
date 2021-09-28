@@ -167,3 +167,29 @@ scale by 1001 (dec = 9) -> 1011010000
 
 * LOD - Leading One Detector - Finds the position of the leading one
 * Barrel Shifter - Shift by N bits
+
+***
+
+#### Error Calculation
+
+##### Absolute Error
+
+E = P - P_  
+abs(E)
+
+##### Relative Error
+
+RE = E/P*100%
+
+#### Error in Mitchell's Algorithm
+
+![](/uploads/20210928-snipaste_2021-09-28_17-56-52.jpg)
+
+If either integer is an exact power of two, there is zero error.
+
+Otherwise, looking at different profiles of our 3D error graph...
+
+![](/uploads/20210928-snipaste_2021-09-28_17-56-52.jpg)
+
+* The profile is replicated in every power-of-two (pair of k1 and k2)
+* The error profile is scaled by 2^(k1+k2)
