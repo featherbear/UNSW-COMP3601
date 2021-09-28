@@ -12,7 +12,7 @@ enable = false
 options = ""
 
 +++
-# Basic Arithmetic In Computers
+# Review of Addition Arithmetic In Computers
 
 ### e.g. Binary addition of two single bits
 
@@ -58,5 +58,25 @@ Improves the critical path, but requires a larger logic area
 
 Smaller area and critical path, but requires multiple cycles  
 The input comes in one bit per cycle
+
+# Review of Multiplication Arithmetic in Computers
+
+![](/uploads/20210928-snipaste_2021-09-28_16-30-49.jpg)
+
+With binary multiplication, since the unit values can only be 0 or 1, multiplication is simply just an `AND` operation
+
+![](/uploads/20210928-snipaste_2021-09-28_16-32-18.jpg)
+
+![](/uploads/20210928-snipaste_2021-09-28_16-32-26.jpg)
+
+This multiplication just becomes a combination of `AND` and `n`-bit adder circuits.
+
+* Logic Area Complexity - O(N^2)
+* Delay Complexity - O(N^2)
+
+### Optimisations
+
+* Wallace Tree Reduction
+* Dadda Tree Reduction
 
 # Approximate Multipliers
