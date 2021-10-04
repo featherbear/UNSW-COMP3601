@@ -5,14 +5,19 @@
 
 function untitled()
     n_tests = 10000;
-    count = 0;
+    count_0 = 0;
+    count_1 = 0;
 
-    test_M = 1;
     for i = 1:n_tests
-      count = count + (runTest(test_M) == test_M);
+      count_0 = count_0 + (runTest(0) == 0);
     end
 
-    fprintf("Statistics: %u / %u (%.2f%%)", count, n_tests, count / n_tests * 100)
+    for i = 1:n_tests
+      count_1 = count_1 + (runTest(1) == 1);
+    end
+
+    fprintf("Statistics (%u tests) | M=0 %.2f%% | M=1 %.2f%%", n_tests, count_0 / n_tests * 100, count_1 / n_tests * 100)
+
 end
 
 function m = runTest(M)
@@ -20,13 +25,12 @@ function m = runTest(M)
   global q;
 
   %%%%%%% SHARED
-  q = 8191;
+  q = 23;
   %%%%%%% SHARED
 
   m = 4;
   n = 12;
 
-  % bob generates a private key
   S = generatePrivateKey(m);
 
   [A, B] = generatePublicKey(S, m, n);
@@ -40,7 +44,7 @@ function S = generatePrivateKey(m)
     global q;
 
     % Generate m random ints that are less than q
-    S = randi(q, [m, 1]); % uniform distribution
+    S = randi(100, [m, 1]); % uniform distribution
 end
 
 function [A, B] = generatePublicKey(S, m, n)
@@ -48,13 +52,14 @@ function [A, B] = generatePublicKey(S, m, n)
 
   A = randi(q, [n, m]); % uniform distribution
 
-  % sqrt(n) <= std_dev << q
-  stdDev = sqrt(n) + randi(fix(0.1 * q));
-  e = fix(normrnd(0, stdDev, [n, 1]));
-  % e = round(randn(n, 1));
+  %%%% sqrt(n) <= std_dev << q
+  %stdDev = sqrt(m) + randi(fix(0.1 * q));
+  %e = fix(normrnd(0, stdDev, [n, 1]));
   
-  B = mod(A*S, q); % no error
-  % B = mod(A*S + e, q);
+  e = round(randn(n, 1));
+  
+  % B = mod(A*S, q); % no error 
+  B = mod(A*S, q) + e;
 end
 
 function [u, v] = encryptBit(M, A, B)
@@ -62,19 +67,21 @@ function [u, v] = encryptBit(M, A, B)
 
   % sampleSize ~= n / 4
   sampleSize = fix(numel(B) / 4);
-
-  u = mod(sum(A(randsample(1:length(A), sampleSize),:)), q);
-  v = mod(sum(B(randsample(1:length(B), sampleSize),:)) - M * fix(q/2), q);
+  samplesChoices = randsample(1:length(A), sampleSize);
+  u = mod(sum(A(samplesChoices,:)), q);
+  v = mod(sum(B(samplesChoices,:)) - M * fix(q/2), q);
 end
 
 function M = decryptBit(u, v, S)
   global q;
 
-  D = mod(v - dot(u, S), q);
-
-  % M = -fix(q / 4) <= D | D <= fix(q / 4);
-
-  % M =  D > q/4 | D < -q/4;
-  M = abs(D) > fix(q / 4);  % 75%
   
+  D = mod(v - dot(S, u), q);   % D is always positive
+ 
+  % M = 0 when -q/4 <= D <= q/4
+  %        aka. D < q/4 or D > 3q/4
+  
+  M = D > q/4 & D < 3*q/4; 
+
 end
+ 
