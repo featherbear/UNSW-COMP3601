@@ -48,16 +48,16 @@ def karatsuba(x,y):
         return ac*(power**2) + bd + (acpbd*power)
 ```
 
-Complexity: ~N^1.58
+Complexity: \~N^1.58
 
 Add and multiply out the factors
-
 
 # Schönhage–Strassen Multiplication Algorithm
 
 # Booth's Multiplication Algorithm
 
+# Toom-Cook Multiplication Algorithm
 
-
+# Furer's Algorithm
 
 https://en.wikipedia.org/wiki/Multiplication_algorithm
