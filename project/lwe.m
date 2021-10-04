@@ -44,7 +44,7 @@ function S = generatePrivateKey(m)
     global q;
 
     % Generate m random ints that are less than q
-    S = randi(100, [m, 1]); % uniform distribution
+    S = randi(q, [m, 1]); % uniform distribution
 end
 
 function [A, B] = generatePublicKey(S, m, n)
