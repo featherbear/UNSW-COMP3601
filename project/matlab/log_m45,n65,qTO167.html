@@ -1,0 +1,237 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<head>
+  <!-- Load d3.js -->
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <style>
+    .svg-container {
+      display: inline-block;
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%; /* aspect ratio */
+      vertical-align: top;
+      overflow: hidden;
+    }
+    .svg-content-responsive {
+      display: inline-block;
+      position: absolute;
+      top: 10px;
+      left: 0;
+    }
+
+    .nap {
+      width: 800px;
+    }
+
+    circle {
+      -webkit-transition: all 0.4s ease-out;
+      -moz-transition: all 0.4s ease-out;
+      transition: all 0.4s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <!-- Create a div where the graph will take place -->
+  <div class="nap">
+    <div id="my_dataviz"></div>
+  </div>
+
+  <script>
+    // set the dimensions and margins of the graph
+    var margin = { top: 0, right: 10, bottom: 40, left: 60 },
+      width = 600 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var svg = d3
+      .select("#my_dataviz")
+      .append("div")
+      .classed("svg-container", true)
+      .append("svg")
+      .attr("preserveAspectRatio", "xMinYMin meet")
+      .attr("viewBox", "0 0 600 400")
+      .classed("svg-content-responsive", true)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    //Read the data
+    d3.csv("log_m45,n65,qTO167.csv", function (data) {
+      let min = Math.min(...data.map((v) => Math.min(v.M0, v.M1)));
+      let max = Math.max(...data.map((v) => Math.max(v.M0, v.M1)));
+      let maxReached = 0;
+
+      data = data.filter((d) => {
+        if (maxReached > 1) return false;
+        console.log(d);
+        if (d.M0 == max && d.M1 == max) {
+          maxReached++;
+        }
+
+        return true;
+      });
+
+      var x = d3
+        .scaleLinear()
+        .domain([data[0].q, data[data.length - 1].q])
+        .range([0, width]);
+      svg
+        .append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      var y = d3
+        .scaleLinear()
+        .domain([
+          0,
+          // min - Math.pow(10, String(min).length - 1) / 2,
+          max + Math.pow(10, String(min).length - 1) / 2,
+        ])
+        .range([height, 0]);
+      svg.append("g").call(d3.axisLeft(y));
+
+      var bisect = d3.bisector(function (d) {
+        return d.q;
+      }).left;
+
+      svg
+        .append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x(function (d) {
+              return x(d.q);
+            })
+            .y(function (d) {
+              return y(d.M0);
+            })
+        );
+
+      svg
+        .append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "orange")
+        .attr("stroke-width", 1.5)
+        .attr(
+          "d",
+          d3
+            .line()
+            .x(function (d) {
+              return x(d.q);
+            })
+            .y(function (d) {
+              return y(d.M1);
+            })
+        );
+
+      svg
+        .append("text")
+        .attr(
+          "transform",
+          "translate(" + width / 2 + " ," + (height + margin.bottom - 10) + ")"
+        )
+        .style("text-anchor", "middle")
+        .text("q");
+
+      svg
+        .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x", 0 - height / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Value");
+
+      var focus1 = svg
+        .append("g")
+        .append("circle")
+        .style("fill", "none")
+        .attr("stroke", "black")
+        .attr("r", 5.5)
+        .style("opacity", 0);
+
+      var focus2 = svg
+        .append("g")
+        .append("circle")
+        .style("fill", "none")
+        .attr("stroke", "black")
+        .attr("r", 5.5)
+        .style("opacity", 0);
+
+      var focusText = svg
+        .append("g")
+        .append("text")
+        .style("opacity", 0)
+        .attr("text-anchor", "left")
+        .attr("alignment-baseline", "middle")
+        .style("white-space", "pre-line");
+
+      svg
+        .append("rect")
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .attr("width", width)
+        .attr("height", height)
+        .on("mouseover", mouseover)
+        .on("mousemove", mousemove)
+        .on("mouseout", mouseout);
+
+      function mouseover() {
+        focus1.style("opacity", 1);
+        focus2.style("opacity", 1);
+        focusText.style("opacity", 1);
+      }
+
+      lastSelect = -1;
+      function mousemove() {
+        var x0 = x.invert(d3.mouse(this)[0]);
+        var i = bisect(data, x0, 1);
+        if (d3.mouse(this)[0] < 5) i = 0;
+        selectedData = data[i];
+        if (!selectedData) return;
+        if (lastSelect == i) return;
+        lastSelect = i;
+
+        focus1.attr("cx", x(selectedData.q)).attr("cy", y(selectedData.M0));
+        focus2.attr("cx", x(selectedData.q)).attr("cy", y(selectedData.M1));
+        focusText
+          .html(
+            [
+              `q=${selectedData.q}`,
+              `0 - ${selectedData.M0} (${
+                Math.round((selectedData.M0 / max) * 1e4) / 1e2
+              }%)`,
+              `1 - ${selectedData.M1} (${
+                Math.round((selectedData.M1 / max) * 1e4) / 1e2
+              }%)`,
+            ].join("\n")
+          )
+          .attr(
+            "y",
+            y((Number(selectedData.M0) + Number(selectedData.M1)) / 2 - 15)
+          );
+
+        if (d3.mouse(this)[0] / width > 0.5) {
+          // console.log(focusText.node());
+          // focusText.style("transform", `translateX(-${temp0.getClientRects()[0].width}px)`);
+        } else {
+          focusText.style("transform", "translateX(0)");
+        }
+
+        focusText.attr("x", x(selectedData.q) + 15);
+      }
+
+      function mouseout() {
+        focus1.style("opacity", 0);
+        focus2.style("opacity", 0);
+        focusText.style("opacity", 0);
+      }
+    });
+  </script>
+</body>
