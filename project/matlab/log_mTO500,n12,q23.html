@@ -29,9 +29,9 @@
       transition: opacity 0.4s ease-out;
     }
     circle {
-      -webkit-transition: all 0.4s ease-out;
+      /* -webkit-transition: all 0.4s ease-out;
       -moz-transition: all 0.4s ease-out;
-      transition: all 0.4s ease-out;
+      transition: all 0.4s ease-out; */
     }
   </style>
 </head>
@@ -42,10 +42,11 @@
   </div>
 
   <script>
-    charter("#dataviz", "log_m45,n65,qTO167.csv", {
-      variable: "q",
+    charter("#dataviz", "log_mTO500,n12,q23.csv", {
+      variable: "m",
       keys: ["M0", "M1"],
-      title: "m=45, n=64, variable q",
+      title: "n=12, q=23, variable m",
+      offScale: true
     });
   </script>
 </body>
