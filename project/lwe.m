@@ -67,7 +67,7 @@ function [u, v] = encryptBit(M, A, B)
 
   % sampleSize ~= n / 4
   sampleSize = fix(numel(B) / 4);
-  samplesChoices = randsample(1:length(A), sampleSize);
+  samplesChoices = randsample(1:length(B), sampleSize);
   u = mod(sum(A(samplesChoices,:)), q);
   v = mod(sum(B(samplesChoices,:)) - M * fix(q/2), q);
 end
