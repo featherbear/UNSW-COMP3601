@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<meta charset="utf-8" />
+<head>
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <script src="./charter.js"></script>
+  <style>
+    .svg-container {
+      display: inline-block;
+      position: relative;
+      width: 100%;
+      padding-bottom: 100%;
+      vertical-align: top;
+      overflow: hidden;
+    }
+    .svg-content-responsive {
+      display: inline-block;
+      position: absolute;
+      top: 10px;
+      left: 0;
+    }
+
+    .nap {
+      width: 800px;
+    }
+
+    .focusText {
+      -webkit-transition: opacity 0.4s ease-out;
+      -moz-transition: opacity 0.4s ease-out;
+      transition: opacity 0.4s ease-out;
+    }
+    circle {
+      -webkit-transition: all 0.4s ease-out;
+      -moz-transition: all 0.4s ease-out;
+      transition: all 0.4s ease-out;
+    }
+  </style>
+</head>
+<body>
+  <!-- Create a div where the graph will take place -->
+  <div class="nap">
+    <div id="dataviz"></div>
+  </div>
+
+  <script>
+    charter("#dataviz", "log_m45,n256,qTO157.csv", {
+      variable: "q",
+      keys: ["M0", "M1"],
+      title: "m=45, n=256, variable q",
+    });
+  </script>
+</body>
