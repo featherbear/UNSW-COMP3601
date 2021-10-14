@@ -6,6 +6,7 @@ on:
     - master
     paths:
     - 'site/**'
+    - '.github/workflows/gh-pages.yml'
 
 jobs:
   build-deploy:
