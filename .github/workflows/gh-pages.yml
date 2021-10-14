@@ -6,6 +6,7 @@ on:
     - master
     paths:
     - 'site/**'
+    - '.github/workflows/gh-pages.yml'
 
 jobs:
   build-deploy:
@@ -25,7 +26,7 @@ jobs:
       run: hugo --gc --minify --cleanDestinationDir -s site -d public
 
     - name: Copy project files to public
-      run: cp -R project/ public/
+      run: cp -R project/ ./site/public
 
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v2.3.1
