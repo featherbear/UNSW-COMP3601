@@ -60,144 +60,141 @@
     .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-  d3.csv(["D_vals_1_m4,n12,q23.csv"], function (data) {
-    d3.csv(["D_vals_0_m4,n12,q23.csv"], function (data2) {
-      const q = 23;
+  d3.csv(["d_vals_m4,n12,q23.csv"], function (data) {
+    const q = 23;
 
-      data = [...data, ...data2];
-      let max = Math.max(...data.map((d) => d.D));
-      document.querySelector("p.ctrl input[type=number]").max = max;
-      document.querySelector("p.ctrl input[type=number]").value = max;
-      var x = d3.scaleLinear().domain([0, max]).range([0, width]);
-      svg
-        .append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+    let max = Math.max(...data.map((d) => d.D));
+    document.querySelector("p.ctrl input[type=number]").max = max;
+    document.querySelector("p.ctrl input[type=number]").value = max;
+    var x = d3.scaleLinear().domain([0, max]).range([0, width]);
+    svg
+      .append("g")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x));
 
-      var y = d3.scaleLinear().range([height, 0]);
-      var yAxis = svg.append("g");
+    var y = d3.scaleLinear().range([height, 0]);
+    var yAxis = svg.append("g");
 
-      let guide1 = svg
-        .append("line")
-        .attr("x1", x((q / 4) >> 0))
-        .attr("x2", x((q / 4) >> 0))
-        .attr("y1", y(0))
-        .attr("y2", y(1600))
-        .attr("stroke", "grey")
-        .attr("stroke-dasharray", "4");
+    let guide1 = svg
+      .append("line")
+      .attr("x1", x((q / 4) >> 0))
+      .attr("x2", x((q / 4) >> 0))
+      .attr("y1", y(0))
+      .attr("y2", y(1600))
+      .attr("stroke", "grey")
+      .attr("stroke-dasharray", "4");
 
-      let guide2 = svg
-        .append("line")
-        .attr("x1", x(((3 * q) / 4) >> 0))
-        .attr("x2", x(((3 * q) / 4) >> 0))
-        .attr("y1", y(0))
-        .attr("y2", y(1600))
-        .attr("stroke", "grey")
-        .attr("stroke-dasharray", "4");
+    let guide2 = svg
+      .append("line")
+      .attr("x1", x(((3 * q) / 4) >> 0))
+      .attr("x2", x(((3 * q) / 4) >> 0))
+      .attr("y1", y(0))
+      .attr("y2", y(1600))
+      .attr("stroke", "grey")
+      .attr("stroke-dasharray", "4");
 
-      let guideText1 = svg
-        .append("text")
-        .attr("x", x((q / 4) >> 0) + 5)
-        .attr("y", y(1400))
-        .text("q/4 = " + ((q / 4) >> 0))
-        .style("font-size", "15px");
-      let guideText2 = svg
-        .append("text")
-        .attr("x", x(((3 * q) / 4) >> 0) + 5)
-        .attr("y", y(1400))
-        .text("-q/4 = " + (((3 * q) / 4) >> 0))
-        .style("font-size", "15px");
+    let guideText1 = svg
+      .append("text")
+      .attr("x", x((q / 4) >> 0) + 5)
+      .attr("y", y(1400))
+      .text("q/4 = " + ((q / 4) >> 0))
+      .style("font-size", "15px");
+    let guideText2 = svg
+      .append("text")
+      .attr("x", x(((3 * q) / 4) >> 0) + 5)
+      .attr("y", y(1400))
+      .text("-q/4 = " + (((3 * q) / 4) >> 0))
+      .style("font-size", "15px");
 
-      function update(nBin) {
-        var histogram = d3
-          .histogram()
-          .value(function (d) {
-            return d.D;
-          })
-          .domain(x.domain())
-          .thresholds(x.ticks(nBin));
+    function update(nBin) {
+      var histogram = d3
+        .histogram()
+        .value(function (d) {
+          return d.D;
+        })
+        .domain(x.domain())
+        .thresholds(x.ticks(nBin));
 
-        var bins = histogram(data);
+      var bins = histogram(data);
 
-        let maxHeight = d3.max(bins, function (d) {
-          return d.length;
+      let maxHeight = d3.max(bins, function (d) {
+        return d.length;
+      });
+
+      y.domain([0, maxHeight]);
+      yAxis.transition().duration(1000).call(d3.axisLeft(y));
+
+      var u = svg.selectAll("rect").data(bins);
+
+      u.enter()
+        .append("rect")
+        .merge(u)
+        .transition()
+        .duration(1000)
+        .attr("x", 1)
+        .attr("transform", function (d) {
+          return "translate(" + x(d.x0) + "," + y(d.length) + ")";
+        })
+        .attr("width", function (d) {
+          return x(d.x1) - x(d.x0) - 1;
+        })
+        .attr("height", function (d) {
+          return height - y(d.length);
+        })
+        .style("fill", function (d) {
+          console.log(d);
+          if (d && d.length > 0 && d[0].match == "1") {
+            return "#69b3a2";
+          } else {
+            return "orange";
+          }
         });
 
-        y.domain([0, maxHeight]);
-        yAxis.transition().duration(1000).call(d3.axisLeft(y));
+      u.exit().remove();
 
-        var u = svg.selectAll("rect").data(bins);
+      [guide1, guide2].forEach((elem) => {
+        elem.attr("y2", y(maxHeight));
+        elem.raise();
+      });
+      [guideText1, guideText2].forEach((elem) => {
+        elem.attr("y", y((maxHeight * 3) / 5));
+        elem.raise();
+      });
+    }
 
-        u.enter()
-          .append("rect")
-          .merge(u)
-          .transition()
-          .duration(1000)
-          .attr("x", 1)
-          .attr("transform", function (d) {
-            return "translate(" + x(d.x0) + "," + y(d.length) + ")";
-          })
-          .attr("width", function (d) {
-            return x(d.x1) - x(d.x0) - 1;
-          })
-          .attr("height", function (d) {
-            return height - y(d.length);
-          })
-          .style("fill", function (d) {
-            console.log(d);
-            if (d && d.length > 0 && d[0].match == "1") {
-              return "#69b3a2";
-            } else {
-              return "orange";
-            }
-          });
+    update(max);
 
-        u.exit().remove();
-
-        [guide1, guide2].forEach((elem) => {
-          elem.attr("y2", y(maxHeight));
-          elem.raise();
-        });
-        [guideText1, guideText2].forEach((elem) => {
-          elem.attr("y", y((maxHeight * 3) / 5));
-          elem.raise();
-        });
-      }
-
-      update(max);
-
-      if (title) {
-        svg
-          .append("text")
-          .attr(
-            "transform",
-            "translate(" + width / 2 + " ," + -(margin.top / 2) + ")"
-          )
-          .style("text-anchor", "middle")
-          .text(title);
-      }
-
+    if (title) {
       svg
         .append("text")
         .attr(
           "transform",
-          "translate(" + width / 2 + " ," + (height + margin.bottom - 10) + ")"
+          "translate(" + width / 2 + " ," + -(margin.top / 2) + ")"
         )
         .style("text-anchor", "middle")
-        .text("D value");
+        .text(title);
+    }
 
-      svg
-        .append("text")
-        .attr("transform", "rotate(-90)")
-        .attr("y", 0 - margin.left)
-        .attr("x", 0 - height / 2)
-        .attr("dy", "1em")
-        .style("text-anchor", "middle")
-        .text("Frequency");
+    svg
+      .append("text")
+      .attr(
+        "transform",
+        "translate(" + width / 2 + " ," + (height + margin.bottom - 10) + ")"
+      )
+      .style("text-anchor", "middle")
+      .text("D value");
 
-      d3.select("#nBin").on("input", function () {
-        update(+this.value);
-      });
+    svg
+      .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - margin.left)
+      .attr("x", 0 - height / 2)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Frequency");
+
+    d3.select("#nBin").on("input", function () {
+      update(+this.value);
     });
   });
 </script>
