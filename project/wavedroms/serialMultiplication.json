@@ -1,0 +1,5 @@
+{signal: [
+  {name: 'clk', wave: 'p...................'},
+  {name: 'rst', wave: '90...90......90.....'},
+  {name: 'mult', wave: '03..304.....405...50', data: ['processing', 'ready','processing','ready','processing','ready']},
+]}

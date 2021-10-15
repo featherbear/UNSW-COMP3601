@@ -1,0 +1,6 @@
+{signal: [
+  {name: 'clk', wave: 'p.......'},
+  {name: 'task1', wave: '03..0...', data: ['processing']},
+  {name: 'task2', wave: '0.3..0..', data: ['processing']},
+  {name: 'task3', wave: '0..3..0.', data: ['processing']},
+]}
