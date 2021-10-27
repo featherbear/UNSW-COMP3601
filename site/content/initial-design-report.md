@@ -1,6 +1,5 @@
 +++
 date = 2021-10-17T12:06:00Z
-draft = true
 hiddenFromHomePage = false
 postMetaInFooter = false
 title = "Initial Design Report"
@@ -333,3 +332,167 @@ Special case optimisations, such as cases for when the divisor is 1 or 2 could b
 The secret key generation module outputs an array of 16 bit integers that acts as the hidden private key for the public key generation. This secret key takes a specified number of randomly generated values and stores them as an array for use in public key generation and decryption.
 
 For modularity the number of rows in the output secret key vector is declared as a generic. This number, _n_, is related to the number of columns required in the desired A matrix. The implemented LWE design can function with _n_ values up to 5 bits (i.e. 32), as to meet the minimum requirements of 4, 8 and 16 values, whilst still allowing further modularity up to 32 rows. It should be noted (see Figure 2.5.1) that the value _n_ should be minimised for optimal performance in speed.
+
+![](/uploads/20211027-image17.png)
+
+<figcaption>Figure 8.1 - Secret Key Generation Block Diagram</figcaption>
+
+On each positive edge of the RNG module’s clock signal \`clk\` the secret generator will sample the RNG output and populate the output array. Once the entire secret has been generated then the ready signal will be set high to alert other modules that the secret is available.
+
+***
+
+# **9. Public Key Generation**
+
+## **9.1 Generating A Matrix**
+
+Generating the A matrix is similar to the generation of the secret key. The RNG module is sampled on positive-edges of the ready signal and is used to populate the entire matrix.
+
+Under the considerations of the project specification the matrix A occupies 16*_m_*_n_ bits. To reduce the space required for outputting the result of the generator the output will be serialised. The output is thus a 16*_m_ std logic vector which will require _n_ output cycles to transmit the entire A matrix.
+
+![](/uploads/20211027-image15.png)
+
+<figcaption>Figure 9.1.1 - Matrix A Generator Block Diagram</figcaption>
+
+At the completion of every row the output of _rngRdy_ is set high to alert other modules that an entire row of A is available on the output rowA bus. Once _n_ rows have been completed the matrixRdy output is set high and the process is halted.
+
+The main controller unit will store the complete output of the A matrix as a part of the public key to be sampled by the encryption scheme.
+
+***
+
+## **9.2 Generating Error Vector**
+
+The generation of an error vector requires a modified RNG module as the standard module only produces a uniform distribution. The error vector values must be sampled from a normally distributed random function.
+
+In the future this error vector is made redundant by the introduction of the approximate multiplier, as the error is intrinsic to the calculation.
+
+One method for the generation of normally distributed random numbers is through the use of the central limit theorem. The central limit theorem concludes that an approximate normal distribution can be achieved by summing independent random numbers. As such we can take the existing RNG module as an input to the normally distributed error generator.
+
+![](/uploads/20211027-image13.png)
+
+<figcaption>Figure 9.2.1 - Wikipedia: Central limit theorem. Gerbem (7 April 2011)</figcaption>
+
+![](/uploads/20211027-image7.png)
+
+<figcaption>Figure 9.2.2 - Wikipedia: Illustration of the central limit theorem. Chen-Pan Liao (15 November 2014)</figcaption>
+
+***
+
+## **9.3 Generating B Matrix**
+
+To generate the B matrix a multiplication between the matrix A and the secret key vector must be calculated, to the result of which an error must be added. Each element of the resulting vector must then be passed to the modulo operation with the decided prime value _q_ as the divisor.
+
+The serialisation of the matrix A reduces the circuitry required to compute the matrix multiplication. Each row of the A matrix is treated as a vector and the dot product is performed with the secret key _s_. Results of the dot product performed on each row of A have an error added and then modulo performed. This results in the serialised output of the column vector B.
+
+Further efficiencies can potentially be obtained through the implementation of an approximate multiplier as this will inherently add an error factor when calculating the product of the A matrix with the secret key _s_.
+
+![](/uploads/20211027-image20.png)
+
+<figcaption>Figure 9.3.1 - Block diagram for generating row of B matrix</figcaption>
+
+***
+
+# **10. Encryption**
+
+The encryption module works in 3 main steps. The first step is to parse the input that is to be encrypted. The input is a message that is represented as a vector of _std_logic_ bits which is just the ASCII representation of the message in binary. Each bit from this input is then passed through the encryption algorithm. The encryption algorithm is carried out in two steps which involve calculating _u_ and _v_ respectively.
+
+To calculate _u_, the matrix A has to be sampled randomly. To do this, the random number generator module is called as a component and the same indices produced are used to sample the matrix ‘B’. Next the sum of the ‘A’ samples’ is calculated and the result is a one row matrix, every element of which is then passed into the modulo function to produce the _u_ matrix.
+
+To calculate _v_, the sum of the ‘B’ matrix sample is calculated. The matrix was sampled in the previous step using the RNG module when matrix ‘A’ was sampled. This sum is then added to the prime number _q_ divided by two only when the message bit is ‘1’. If the message bit is zero then nothing is added to the sum. The output is _v_.
+
+The encryption module then passes the matrix _u_ and the number _v_ to the receiver who can use the decryption module to decipher the message.
+
+The input to the encryption module is serialised, so it received the public key (‘A’,’B’) of 16*m bits, ‘n’ times. Random incoming rows are saved and some rows are dropped which is decided by the random number generator. Once the encryption of the message has been completed, the output pair (_u,v_) is also serialised and is sent to the decryption module ‘n’ times. Serialisation is done to improve the storage efficiency of the algorithm on the hardware.
+
+![](/uploads/20211027-image2.png)
+
+<figcaption>Figure 10.1 - Illustration of the encryption process.</figcaption>
+
+***
+
+# **11. Decryption**
+
+![](/uploads/20211027-image34.png)
+
+<figcaption>Figure 11.1 - Successful decryption of M = 1</figcaption>
+
+Decryption of encrypted messages is given by the expression D = (v - S·u) % q, where
+
+* D is a decrypted value
+* S is the secret key (size \`n\`)
+* u is one part of the encrypted data
+* v is another part of the encrypted data
+* S·u is the dot product of S and u
+
+Once a message is decrypted, it can be decoded given the constraints that message M = 0 when -q/4 <= D < q/4. Considering the unsigned nature of values in the LWE design, this inequality can be simplified and inverted to produce the conditional inequality M = 1 when q/4 <= D < 3q/4.
+
+To further simplify this inequality, q/4 could be subtracted from the inequality to produce the conditional inequality M = 1 when 0 <= D - q/4 < q/2, or simply **M = 1 when D - q/4 < q/2**.
+
+![](/uploads/20211027-image4.png)
+
+<figcaption>Figure 11.2 - Decryption Component FSM Layout</figcaption>
+
+A finite state machine-like structure was implemented to control the behaviour of the decryption component during its several stages (i.e. multiplication, subtraction, modulo and comparison). This decoupled the requirement for flag/state variables, which consequently simplified the development and maintenance of the component.
+
+![](/uploads/20211027-image10.png)
+
+<figcaption>Figure 11.3 - Mathematical Equivalence of Logical Bit Shifting</figcaption>
+
+To efficiently calculate q/2, bitwise arithmetic can be used in lieu of a division component by logically shifting the bits of q to the right by one place (q >> 1). Similarly, a logical right shift of 2 bits for the bits of q will produce an equivalent result to q/4.
+
+***
+
+# **12. Main Control Unit (MCU)**
+
+![](/uploads/20211027-image1.png)
+
+<figcaption>Figure 12.1 - Main Control Unit Block Diagram</figcaption>
+
+The main controller unit (MCU) is responsible for interfacing with each main component of the LWE design, such as the (de)assertion of the \`rst\` signal, as well as the seeding and retrieval of data to and from other components.
+
+The MCU is also responsible for providing the clock signal (\`clk\`), variables \`sizeM\` and \`sizeN\`, the message bit to encode, and modulo value \`q\` as global signals that can be connected to the required components. A stream of bits (i.e. bytes of a string) will be able to be encrypted and transmitted through the MCU, whose source can originate from a text file.
+
+***
+
+# **13. Testing Components**
+
+Unit testing of individual components was performed through the creation of testbenches in Vivado. These tests were designed to verify the correct functionality of the implemented VHDL code, and to provide insight into critical paths and delays for future optimisations. For the majority of functional components, the tests sought to validate the accuracy of the function as well as the stability of the component, such as the internal state becoming immutable when the ready signal is asserted.
+
+![](/uploads/20211027-image22.png)
+
+<figcaption>Figure 13.1 - Testbench Snippet (Modulo Component)</figcaption>
+
+For each testbench, a standardised approach routine was devised to consistently test components between files. Particularly, each individual test should contain an initialiser, trigger and wait stage, each separated by some form of time delay.
+
+![](/uploads/20211027-image5.png)
+
+<figcaption>Figure 13.2 - Usage of a common ClockProvider</figcaption>
+
+To achieve consistent results between tests, and between components per test, a standardised clock period of 10ns was selected, as to ensure that sufficient time was allocated per cycle for each component's cycle to wholly complete. During a synthesis of the system (in its partially completed state), it was discovered that a period of 2.961ns (\~338 MHz) was the fastest permissible clock cycle period for operation without encountering any jitter or abnormalities.
+
+![](/uploads/20211027-image30.png)
+
+<figcaption>Figure 13.3 - Visualisation of Elapsed Clock Cycles</figcaption>
+
+Whilst speed efficiency is not the principle of focus, it is still of relevance and of best interest to perform layout-independent design optimisations to decrease the number of cycles required for components to complete. To assist in the benchmarking and optimisation of cycle count, a cycle counter was incorporated into each testbench to log the number of cycles that have elapsed during the duration between the deassertion of the reset signal \`rst\`, and the assertion of the ready signal \`ready\`. Upon graphical inspection of the resultant waveform, this auxiliary measurement provided fast and straight-forward information about the component's runtime duration without requiring the manual counting of clock cycles.
+
+***
+
+# **14. Planning and Timeline**
+
+This project is divided into four major phases. The first phase of the project was set to take place in week one where the initial plans for the project timeline were first laid out. Following that in the next three weeks was the development phase. This phase was mainly aimed towards getting a rough implementation of the different modules completed. Once that is complete phase three moves the project towards evaluating the current efficiency of the implementations of the module and improving the performance. Finally the last phase was created for further development giving the team sufficient time to develop the project further and improve on the current progress made up till that phase.
+
+Going forward into the last five weeks of this project, the plans to complete the additional modules that are crucial to the LWE implementation are laid out in the gantt chart. Phase four of the development lifecycle of this project consists of completing Key generation modules and the encryption modules. Once that is complete, further development into using approximate multipliers will be carried out and the evaluation of the different implementations of the approximate multipliers is reserved for week nine and the start of week ten. The final week is reserved for tying up the loose ends and finalising the implementation as a whole.
+
+Group meetings are scheduled to occur every Monday and Friday of each week, where a standup is conducted and each group member talks about their progress on their respective part of the project and is assigned new tasks as required. These group meetings are extremely crucial to the smooth functioning of the team and the completion of the project.
+
+The LWE project has been divided into eleven major modules. These modules are shown in the development part of the Gantt chart below. This work was equally divided amongst the group members at the start of the project in week one.
+
+![](/uploads/20211027-image11.png)
+
+<figcaption>Figure 14.1 - Gantt Chart</figcaption>
+
+***
+
+# **15. Conclusion**
+
+LWE is aimed toward creating a more secure method of encrypting data for public key cryptography that is quantum secure. So far we have shown that the LWE is effective using MATLAB and aim to improve this algorithm with engineering design considerations in mind. Completing the design and optimising it are the tasks that will be completed in the next phase of this project. To conclude this project has been planned out meticulously and all of the progress made till now has been in accordance with our Gantt chart.
