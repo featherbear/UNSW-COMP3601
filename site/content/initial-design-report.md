@@ -59,7 +59,6 @@ An integration test was also performed given the same parameter set \[m=4, n=12,
 
 A test suite was also written to verify the requirements for an exact private key S to be required for successful decryption of an LWE-encrypted message. Given the same set \[m=4, n=12, q=23\], when the private key S was not explicitly known (i.e. the private key was altered by one single bit) a tested sample size of one hundred thousand (100,000) tests could not produce a relatively stable output M, where roughly 50% of decrypted D-values were invalid. This verifies the ability for LWE to only be decrypted successfully if the private key is explicitly known.
 
-  
 The LWE cryptographic algorithm has multiple input parameters - specifically the sizes \`m\` and \`n\`, as well as the modulo \`q\`. Additional tests were performed to best understand the impacts of each variable. Values \`m\`, \`n\` and \`q\` were individually modified one at a time to analyse the impact of the variable on the accuracy of decryption.
 
 **<u>Modification of `m`</u>**
@@ -228,7 +227,7 @@ Other methods that were considered for random number generation included the MT1
 
 <figcaption>Figure 6.1 - Repeated Addition Multiplication</figcaption>
 
-As an initial design, the novel repeated addition algorithm was implemented in VHDL.   
+As an initial design, the novel repeated addition algorithm was implemented in VHDL.  
 Given a large multiplicand \`x\` and multiplier \`y\`, the repeated addition algorithm would require \`x\` clock cycles to complete. This is evidently unideal, especially for larger n-bit multiplications (i.e. 65535 × 50 would take sixty five thousand clock cycles).
 
 A possible optimisation could be implemented by switching the multiplicand and multiplier around when required, as to repeat the loop only as many times as the smallest of the terms - for example 50 × 65535 would only take 50 clock cycles. However this optimisation fails to improve the time cost for multiplications of two large numbers; as 65535 × 65534 will still take sixty five thousand clock cycles despite the choice of multiplicand and multiplier.
@@ -347,7 +346,7 @@ On each positive edge of the RNG module’s clock signal \`clk\` the secret gene
 
 Generating the A matrix is similar to the generation of the secret key. The RNG module is sampled on positive-edges of the ready signal and is used to populate the entire matrix.
 
-Under the considerations of the project specification the matrix A occupies 16*_m_*_n_ bits. To reduce the space required for outputting the result of the generator the output will be serialised. The output is thus a 16*_m_ std logic vector which will require _n_ output cycles to transmit the entire A matrix.
+Under the considerations of the project specification the matrix A occupies 16*_mn_ bits. To reduce the space required for outputting the result of the generator the output will be serialised. The output is thus a 16_m_ std logic vector which will require _n_ output cycles to transmit the entire A matrix.
 
 ![](/uploads/20211027-image15.png)
 
@@ -496,3 +495,53 @@ The LWE project has been divided into eleven major modules. These modules are sh
 # **15. Conclusion**
 
 LWE is aimed toward creating a more secure method of encrypting data for public key cryptography that is quantum secure. So far we have shown that the LWE is effective using MATLAB and aim to improve this algorithm with engineering design considerations in mind. Completing the design and optimising it are the tasks that will be completed in the next phase of this project. To conclude this project has been planned out meticulously and all of the progress made till now has been in accordance with our Gantt chart.
+
+***
+
+# 16. Appendix
+
+**<u>2.1 - MATLAB Model</u>**
+
+```matlab
+function S = generatePrivateKey(m)
+	global q;
+	
+    % Generate m random integers (between 0 and q-1)
+	S = randi(q, [m, 1]); % uniform distribution
+end
+
+function [A, B] = generatePublicKey(S, m, n)
+	global q;
+    
+	A = randi(q, [n, m]); % uniform distribution
+	
+    %%%%% STD DEVIATION BASED ERROR VECTOR
+	% % Does not seem to produce good accuracy with the
+	% % restriction given in the lecture slide:
+	% % sqrt(n) <= std_dev << q
+	% stdDev = sqrt(m) + randi(fix(0.1 * q));
+	% e = fix(normrnd(0, stdDev, [n, 1]));
+	
+    e = round(randn(n, 1)); % Error vector with values from -1 to 1
+	
+    B = mod(A*S, q) + e;
+end
+
+function [u, v] = encryptBit(M, A, B)
+	global q;
+    
+	sampleSize = fix(numel(B) / 4); % sampleSize ~= n / 4
+	samplesChoices = randsample(1:length(B), sampleSize);
+    
+    u = mod(sum(A(samplesChoices,:)), q);
+    v = mod(sum(B(samplesChoices,:)) - M * fix(q/2), q);
+end
+
+function M = decryptBit(u, v, S)
+	global q;
+    
+	D = mod(v - dot(S, u), q); % mod q in MATLAB will produce a positive value
+	
+    M = D > q/4 & D < 3*q/4;
+end
+```
