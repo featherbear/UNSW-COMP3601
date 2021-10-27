@@ -206,3 +206,130 @@ The random number generator takes in a fixed seed as an initial input that is pa
 To resolve this issue, the most simple and effective solution was to change the initial seed that is used each time when the reset signal is asserted to ‘1’. To get a different seed each time, the current date and time is extracted as a standard logic vector, and the bits are manipulated to create a random initial sixteen bit seed for the _LFSR_.
 
 ![](/uploads/20211027-image38.png)
+
+<figcaption>Figure 5.3- Day/Month/Year signal component</figcaption>
+
+***
+
+## **5.3 Random Prime Number Generation**
+
+For the random prime number generation, we created a separate array to store the prime numbers, and make use of the result of the random number generator (a single random number but within a smaller range) as the index of the array, to select a specific prime number to output. By precalculating the prime numbers (which by nature do not change in 'prime-ness'), the required board area can be minimised as no components will be required to perform a primality check
+
+## **5.4 Consideration of Alternate Methods**
+
+Other methods that were considered for random number generation included the MT19937 Mersenne Twister, the Xoroshiro128+ PRNG algorithm, and the Trivium PRNG algorithm. However after carefully considering and analysing each of these algorithms, we found that LFSR uses the least number of FPGA resources when compared to the other methods. Furthermore, further investigation into the Xoroshiro128+ algorithm revealed that its randomness was only optimal for extremely large number ranges, in the magnitude of 128 bit and larger values. This led us to choose _LFSR_ as the PRNG algorithm paired with the current date and time combination as a random seed.
+
+***
+
+# **6. Multiplier**
+
+## **6.1 Exact Multiplication**
+
+![](/uploads/20211027-image24.jpg)
+
+<figcaption>Figure 6.1 - Repeated Addition Multiplication</figcaption>
+
+As an initial design, the novel repeated addition algorithm was implemented in VHDL.   
+Given a large multiplicand \`x\` and multiplier \`y\`, the repeated addition algorithm would require \`x\` clock cycles to complete. This is evidently unideal, especially for larger n-bit multiplications (i.e. 65535 × 50 would take sixty five thousand clock cycles).
+
+A possible optimisation could be implemented by switching the multiplicand and multiplier around when required, as to repeat the loop only as many times as the smallest of the terms - for example 50 × 65535 would only take 50 clock cycles. However this optimisation fails to improve the time cost for multiplications of two large numbers; as 65535 × 65534 will still take sixty five thousand clock cycles despite the choice of multiplicand and multiplier.
+
+Consequently, research was performed to investigate alternative methods of multiplying two numbers together that were more efficient (speed-wise) than the repeated addition algorithm. The traditional 'long multiplication' was examined however not attempted in implementation due to its known time complexity of O(n^2).
+
+![](/uploads/20211027-image21.jpg)
+
+<figcaption>Figure 6.2 - Bit-shift Multiplication Algorithm (official name unknown)</figcaption>
+
+In researching more time efficient multiplication algorithms, an algorithm was found that would operate in a time only bound by the bit-size of the multiplication terms. This algorithm revolved around multiplying an intermediate result by two every time the intermediate multiplicand was divisible by two when halved, else simply performing a binary addition. As seen in Figure 6.2, the algorithm was able to compute 87 × 250 in 7 clock cycles, which is 1240% faster than the novel approach. The pseudo code for such an algorithm is as found below
+
+![](/uploads/20211027-image31.png)
+
+<figcaption>Figure 6.3 - Bit-shift Multiplication Algorithm Pseudocode</figcaption>
+
+Due to the nature of how the aforementioned algorithm internally operated on its n-bit terms, a guarantee of at most \`n\` clock cycles of execution was discovered, whose bounds held true for any n-bit number regardless of the value of the multiplicand or multiplier. This would ensure that the multiplication of the 16-bit values 65535 × 65534 would only require a maximum 16 clock cycles of execution. Additionally, as compared to the prior novel approach - no reordering of the multiplicand and multiplier values were required.
+
+Further research on faster multiplication methods revealed that a plethora of other "fast multiplier" algorithms exist, inclusive of Karatsuba's, Schonhange & Strassen's, Booth's, Toom-Cook's, and the most performant (currently) algorithm by Harvey and van der Hoeven - which incurs a time complexity of O(n log(n)). Whilst these algorithms exhibit efficiency in multiplying large numbers, they do not add much benefit for the multiplication of small numbers. In fact, the implementation of these algorithms would have a larger resource footprint (due to their internal multipliers and storage blocks) which would dramatically increase the board area. As minimising the board area is a goal for this LWE implementation, it was decided that these sophisticated multiplication algorithms would not be implemented.
+
+***
+
+## **6.2 Consideration of Hardware Optimisations**
+
+Regardless of the multiplication algorithm implemented, there exists a hardware bottleneck where a clock cycle must be used to wait for the setup and deassertion of the \`rst\` signal, and another cycle for the polling of the \`ready\` signal. As a result, two extra clock cycles are required for each additional multiplication that is required by the LWE design.
+
+![](/uploads/20211027-image19.png)
+
+<figcaption>Figure 6.2.1 - Serial Multiplication</figcaption>
+
+For example in Figure 6.2.1, when three independent multiplications are processed one after the other, the LWE module would have to deassert the \`rst\` signal three times before the processing begins on the next clock cycle. Before asserting the next \`rst\` signal, the system must wait for \`ready\` to be asserted.
+
+As the additional control signal clock cycle delays were of a hardware nature, focus was shifted away from software optimisations and onto hardware optimisations. In an attempt to reduce the number of clock cycles, parallel and pipelined processing paradigms were investigated.
+
+**<u>Parallel Processing</u>**
+
+![](/uploads/20211027-image25.png)
+
+<figcaption>Figure 6.2.2 - Parallel Multiplication</figcaption>
+
+Parallel processing of multiplication operations involve having multiple instances of the multiplication component within the LWE module. This allows for each multiplier to independently operate on their parameters simultaneously, allowing for a higher throughput of data. Compared to serial multiplication (as seen in Figure 6.2.1), the time it takes to complete the same task in a 3-parallel multiplier is considerably less, requiring only 8 clock cycles as compared to 19 clock cycles for a 3-serial multiplication.
+
+There are two disadvantages of parallel processing of multipliers, with the first disadvantage being the increased resource usage of the available board area, as each multiplier will require their own I/O and internal components on the FPGA. This will adversely impact the goal to minimise the board area for the LWE design.
+
+![](/uploads/20211027-image14.png)
+
+<figcaption>Figure 6.2.3 - Corrupted Parallel Multiplication</figcaption>
+
+Another potential disadvantage of implementing a parallel design is the delay for a completed worker of a parallel set to begin a new task. In Figure 6.2.2, whilst _mult1_ has been marked as \`ready\` the multiplier must wait for both _mult2_ and _mult3_ to complete before the parallel set can be reset and be given new parameters. This is as a result of synchronisation locking, where all tasks in a parallel set must be completed to ensure that a new task will not corrupt the state of another task. If a multiplier is started prematurely before the completion of all the parallel workers in the active iteration, the internal states of the other multipliers can be corrupted, as seen in Figure 6.2.3.
+
+Whilst it is possible to give each multiplier their own queue, this paradigm issue will inevitably need to be managed elsewhere within the design, whether it be a buffer or a synchronisation lock. The risk of corruption due to unlocked task synchronisation is dependent on the nature of the parallel data; if the parallel set is operating on data that must be treated as a whole, then synchronisation must be addressed. Conversely, for unbound data this issue is not of concern.
+
+**<u>Pipelined Processing</u>**
+
+![](/uploads/20211027-image37.png)
+
+<figcaption>Figure 6.2.4 - Theoretical Pipelined Multiplier</figcaption>
+
+Pipelined processing refers to the simultaneous execution of several instructions where each instruction is at a different stage of the Fetch-Decode-Execute cycle. Pipelined processing allows for hardware that is unused by a former instruction to be utilised for subsequent instructions, even whilst the former instruction has not yet completed. The pipelining of instructions compared to the serial chaining of instructions dramatically reduces the required clock cycles to complete tasks.
+
+In application to optimising the multiplication hardware, it was concluded that pipelined multiplication would be difficult to implement, as the multiplication process is already atomic. Furthermore, pipelining refers more-so to processor design than in application to optimising an individual component.
+
+**<u>Discussion<u>**
+
+Given the project requirements to be able to process and multiply matrices (i.e. Public key A of size m × n), it was deemed necessary to incorporate some parallel processing into the multiplier despite an increase in board area - as the speed improvements (in this instance) were considered more important.
+
+***
+
+## **6.3 Approximate Multipliers**
+
+The implementation of an approximate multiplier is crucial in decreasing the required clock cycles for a multiplication, especially when the results of the multiplication do not need to be exact (such as the least significant bits of a large n-bit multiplication having little effect on the magnitude of the product). Replacing the current exact multiplier implementation with an approximate multiplier will be the focus of the latter half of this project's schedule.
+
+The approximate multiplier will likely share the same port interface as the exact multiplier, having two input signals, an output signal, and a ready signal.
+
+***
+
+# **7. Modulo**
+
+![](/uploads/20211027-image23.png)
+
+<figcaption>Figure 7.1 - Subtraction Based Modulo</figcaption>
+
+Similar to the multiplier component, a basic modulo algorithm was initially implemented, where a divisor was constantly subtracted from a dividend until the result was less than the divisor. In the example above (Figure 7.1), the operation 128 % 2 consumed 65 clock cycles; for larger n-bit values it was evident that this novel algorithm was suboptimal.
+
+![](/uploads/20211027-image8.png)
+
+<figcaption>Figure 7.2 - Bit-shift Modulo Algorithm (official name unknown</figcaption>
+
+Likewise with the bit-shift multiplication algorithm, a bit-shifting modulo algorithm was implemented, where larger multiples of the divisor (in powers of 2) were subtracted from the dividend before smaller multiples. For example, subtracting \`4x\` consumes one clock cycle; compared to four clock cycles being required to subtract \`x\` four times.
+
+Consequently, this algorithm achieved a speedup of 812% for a 128 % 2 operation.
+
+Whilst this algorithm doesn't guarantee a maximum execution duration of \`n\` clock cycles for an n-bit operation, there are still substantial performance improvements.
+
+Special case optimisations, such as cases for when the divisor is 1 or 2 could be implemented, however these cases are extremely unlikely to be encountered within the LWE design, which will only utilise the modulo operation against fairly large prime values.
+
+***
+
+# **8. Secret Key Generation**
+
+The secret key generation module outputs an array of 16 bit integers that acts as the hidden private key for the public key generation. This secret key takes a specified number of randomly generated values and stores them as an array for use in public key generation and decryption.
+
+For modularity the number of rows in the output secret key vector is declared as a generic. This number, _n_, is related to the number of columns required in the desired A matrix. The implemented LWE design can function with _n_ values up to 5 bits (i.e. 32), as to meet the minimum requirements of 4, 8 and 16 values, whilst still allowing further modularity up to 32 rows. It should be noted (see Figure 2.5.1) that the value _n_ should be minimised for optimal performance in speed.
