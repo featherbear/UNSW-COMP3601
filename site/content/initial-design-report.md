@@ -21,8 +21,8 @@ Initial Design Report
 Ziyue Lian – z5224346  
 Andrew Nicholson – z5255137  
 Arpit Singh Rulania – z5238561  
-Andrew Wong – z5206677  
-  
+Andrew Wong – z5206677
+
 School of Computer Science and Engineering  
 COMP3601 – Design Project A  
 2021 Session Three
@@ -51,7 +51,36 @@ For the parameter set \[m=4, n=12, q=23\] a sample size of one hundred thousand 
 
 <figcaption>Figure 2.2 - MATLAB output of a test script</figcaption>
 
-An integration test was also performed given the same parameter set \[m=4, n=12, q=23\], where a combination of bits (to form the string "Hello, world!" were encrypted and decrypted ten thousand (10,000) times - each test generating their own private/public key pair. Results of the test revealed that 82.95% of the tests successfully decrypted each of the 104 bits, which is of reasonably high accuracy.   
+An integration test was also performed given the same parameter set \[m=4, n=12, q=23\], where a combination of bits (to form the string "Hello, world!" were encrypted and decrypted ten thousand (10,000) times - each test generating their own private/public key pair. Results of the test revealed that 82.95% of the tests successfully decrypted each of the 104 bits, which is of reasonably high accuracy.  
 (13 characters = 13 bytes = 13 × 8 bits = 104 bits)
 
 ![](/uploads/20211027-image16.png)
+
+<figcaption>Figure 2.3 - Histogram of decrypted D-values with invalid private key S. Orange indicates an incorrect decryption</figcaption>
+
+A test suite was also written to verify the requirements for an exact private key S to be required for successful decryption of an LWE-encrypted message. Given the same set \[m=4, n=12, q=23\], when the private key S was not explicitly known (i.e. the private key was altered by one single bit) a tested sample size of one hundred thousand (100,000) tests could not produce a relatively stable output M, where roughly 50% of decrypted D-values were invalid. This verifies the ability for LWE to only be decrypted successfully if the private key is explicitly known.
+
+  
+The LWE cryptographic algorithm has multiple input parameters - specifically the sizes \`m\` and \`n\`, as well as the modulo \`q\`. Additional tests were performed to best understand the impacts of each variable. Values \`m\`, \`n\` and \`q\` were individually modified one at a time to analyse the impact of the variable on the accuracy of decryption.
+
+**<u>Modification of `m`</u>**
+
+![](/uploads/20211027-image28.png)
+
+<figcaption>Figure 2.4 - Success rate against incrementing values of m for both M=0 and M=1</figcaption>
+
+As shown from Figure 2.4 above, given the parameter set \[n=12, q=23\], the variance of \`m\` had little to no effect towards the successful rate of decryption. It should be noted that subsequent tests (Figure 2.6.1 and Figure 2.6.2) performed after the completion of this test revealed the same inference.
+
+**<u>Modification of `n`</u>**
+
+![](/uploads/20211027-image26.png)
+
+<figcaption>Figure 2.5.1 - Decreasing success rate for increasing values of n</figcaption>
+
+Given the parameter set \[m=4, q=23\] it was found that the increasing values of \`n\` dropped the accuracy of a successful decryption (given a known private key). It was also noted that the time required to encrypt and decrypt a message bit was considerably longer with larger values of \`n\`, however no further quantitative testing was performed to analyse speed impacts. Both observations inferred that the value of \`n\` should stay small.
+
+Later tests revealed that larger values of \`q\` were required to maintain the successful decryption accuracy for larger values of \`n\` (i.e. Figure 2.6.1 and Figure 2.7).
+
+![](/uploads/20211027-image9.png)
+
+<figcaption>Figure 2.5.2 - Large scale decreasing success rate for increasing values of n</figcaption>
