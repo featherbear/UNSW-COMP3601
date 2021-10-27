@@ -40,6 +40,7 @@ fields:
     name: options
     label: options
 pages:
+- site/content/initial-design-report.md
 - site/content/lectures/approximate-multipliers.md
 - site/content/lectures/learning-with-errors.md
 - site/content/presentations.md
