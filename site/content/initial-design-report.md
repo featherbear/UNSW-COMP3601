@@ -504,44 +504,44 @@ LWE is aimed toward creating a more secure method of encrypting data for public 
 
 ```matlab
 function S = generatePrivateKey(m)
-	global q;
-	
+    global q;
+    
     % Generate m random integers (between 0 and q-1)
-	S = randi(q, [m, 1]); % uniform distribution
+    S = randi(q, [m, 1]); % uniform distribution
 end
 
 function [A, B] = generatePublicKey(S, m, n)
-	global q;
+    global q;
     
-	A = randi(q, [n, m]); % uniform distribution
-	
+    A = randi(q, [n, m]); % uniform distribution
+    
     %%%%% STD DEVIATION BASED ERROR VECTOR
-	% % Does not seem to produce good accuracy with the
-	% % restriction given in the lecture slide:
-	% % sqrt(n) <= std_dev << q
-	% stdDev = sqrt(m) + randi(fix(0.1 * q));
-	% e = fix(normrnd(0, stdDev, [n, 1]));
-	
+    % % Does not seem to produce good accuracy with the
+    % % restriction given in the lecture slide:
+    % % sqrt(n) <= std_dev << q
+    % stdDev = sqrt(m) + randi(fix(0.1 * q));
+    % e = fix(normrnd(0, stdDev, [n, 1]));
+    
     e = round(randn(n, 1)); % Error vector with values from -1 to 1
-	
+    
     B = mod(A*S, q) + e;
 end
 
 function [u, v] = encryptBit(M, A, B)
-	global q;
+    global q;
     
-	sampleSize = fix(numel(B) / 4); % sampleSize ~= n / 4
-	samplesChoices = randsample(1:length(B), sampleSize);
+    sampleSize = fix(numel(B) / 4); % sampleSize ~= n / 4
+    samplesChoices = randsample(1:length(B), sampleSize);
     
     u = mod(sum(A(samplesChoices,:)), q);
     v = mod(sum(B(samplesChoices,:)) - M * fix(q/2), q);
 end
 
 function M = decryptBit(u, v, S)
-	global q;
+    global q;
     
-	D = mod(v - dot(S, u), q); % mod q in MATLAB will produce a positive value
-	
+    D = mod(v - dot(S, u), q); % mod q in MATLAB will produce a positive value
+    
     M = D > q/4 & D < 3*q/4;
 end
 ```
@@ -550,59 +550,59 @@ end
 
 ```matlab
 function ret = doTest()
-	global q;
+    global q;
     q = 23; % shared
-	
+    
     m = 4;
-	n = 12;
+    n = 12;
 
-	S = lwe.generatePrivateKey(m);
-	[A, B] = lwe.generatePublicKey(S, m, n);
-
-
+    S = lwe.generatePrivateKey(m);
+    [A, B] = lwe.generatePublicKey(S, m, n);
 
 
 
 
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARTY 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-	stringSend = "Hello, world!";
-	bitsToSend = dec2bin(char(stringSend), 8);
-
-	theInternetOrSomethingForU = [];
-	theInternetOrSomethingForV = [];
-
-	for i = 1:length(bitsToSend)
-		for j = 1:length(bitsToSend(i, :))
-			[u,v] = lwe.encryptBit(bitsToSend(i, j), A, B);
-			theInternetOrSomethingForU = [theInternetOrSomethingForU; u];
-			theInternetOrSomethingForV = [theInternetOrSomethingForV; v];
-		end
-	end
-
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARTY 2 END %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARTY 2 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+    stringSend = "Hello, world!";
+    bitsToSend = dec2bin(char(stringSend), 8);
 
+    theInternetOrSomethingForU = [];
+    theInternetOrSomethingForV = [];
 
-	stringRecv = [];
-	letterBits = [];
-	for i = 1:length(theInternetOrSomethingForU)
-		m = lwe.decryptBit(
-			theInternetOrSomethingForU(i, :),
-			theInternetOrSomethingForV(i),
-			S
-		);
-		letterBits = [letterBits, m];
-		if (length(letterBits) == 8)
-			stringRecv = [stringRecv; letterBits];
-			letterBits = [];
-		end
+    for i = 1:length(bitsToSend)
+        for j = 1:length(bitsToSend(i, :))
+            [u,v] = lwe.encryptBit(bitsToSend(i, j), A, B);
+            theInternetOrSomethingForU = [theInternetOrSomethingForU; u];
+            theInternetOrSomethingForV = [theInternetOrSomethingForV; v];
+        end
     end
-	
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% PARTY 2 END %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+    stringRecv = [];
+    letterBits = [];
+    for i = 1:length(theInternetOrSomethingForU)
+        m = lwe.decryptBit(
+            theInternetOrSomethingForU(i, :),
+            theInternetOrSomethingForV(i),
+            S
+        );
+        letterBits = [letterBits, m];
+        if (length(letterBits) == 8)
+            stringRecv = [stringRecv; letterBits];
+            letterBits = [];
+        end
+    end
+    
     resultString = char(reshape(bin2dec(num2str(stringRecv)), 1, []));
-	
+    
     ret = strcmp(resultString, stringSend);
 end
 ```
