@@ -1,0 +1,10 @@
+{signal: [
+  {name: 'clk', wave: 'p........'},
+  {name: 'rst', wave: '90...90..'},
+  {name: 'mult1', wave: '03..0.3..', data: ['processing', 'processing']},
+  {name: 'mult1_ready', wave: '0...30...', data: ['ready']},
+  {name: 'mult2', wave: '04...x...', data: ['processing']},
+  {name: 'mult2_ready', wave: '0....x...', data: ['ready']},
+  {name: 'mult3', wave: '05...x...', data: ['processing']},
+  {name: 'mult3_ready', wave: '0....x...', data: ['ready']},
+]}
