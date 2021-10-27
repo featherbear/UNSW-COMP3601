@@ -291,7 +291,7 @@ Pipelined processing refers to the simultaneous execution of several instruction
 
 In application to optimising the multiplication hardware, it was concluded that pipelined multiplication would be difficult to implement, as the multiplication process is already atomic. Furthermore, pipelining refers more-so to processor design than in application to optimising an individual component.
 
-**<u>Discussion<u>**
+**<u>Discussion</u>**
 
 Given the project requirements to be able to process and multiply matrices (i.e. Public key A of size m × n), it was deemed necessary to incorporate some parallel processing into the multiplier despite an increase in board area - as the speed improvements (in this instance) were considered more important.
 
