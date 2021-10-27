@@ -84,3 +84,23 @@ Later tests revealed that larger values of \`q\` were required to maintain the s
 ![](/uploads/20211027-image9.png)
 
 <figcaption>Figure 2.5.2 - Large scale decreasing success rate for increasing values of n</figcaption>
+
+**<u>Modification of `q`</u>**
+
+![](/uploads/20211027-image33.png)
+
+<figcaption>Figure 2.6.1 - Increasing decryption accuracy given an increasing q</figcaption>
+
+![](/uploads/20211027-image36.png)
+
+<figcaption>Figure 2.6.2 - Increasing decryption accuracy given an increasing q</figcaption>
+
+Figure 2.6.1 and Figure 2.6.2 demonstrate the increase in successful decryptions given different values of \`q\` for the parameter set \[m=4/45, n=256\]. It can be inferred that large values of \`q\` are important to ensure the successful decryption of an encrypted message. A comparison between the two above figures indicate the minimal impact of \`m\` towards decryption accuracy.
+
+![](/uploads/20211027-image3.png)
+
+<figcaption>Figure 2.7 - Increasing decryption accuracy given an increasing q</figcaption>
+
+When testing increasing values of q against the parameter set \[m=45, n=65\], a comparison between n=65 and n=256 (i.e. Comparing Figure 2.6.1 and 2.7) reveals that a higher rate of successful decryptions is achieved when \`n\` is minimal. Conversely, a larger value of \`n\` decreases the accuracy of successful decryptions, thus \`n\` should be restricted to a small value.
+
+***
