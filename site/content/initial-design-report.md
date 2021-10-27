@@ -124,3 +124,85 @@ In conclusion, \`q\` should be maximised and \`n\` should be minimised to obtain
 The current MATLAB model incorporates an exact multiplier, whose computation time is slower when compared to an approximate multiplier. When the future MATLAB model that features an approximate multiplier in lieu of the exact multiplier is created, it will be worthwhile to perform timing tests to quantitatively compare the performance increase.
 
 ***
+
+# **3. Hardware Design Rationale**
+
+## **3.1. Design Goal**
+
+The proposed feature implementation of LWE should achieve the following requirements
+
+* Support modulo values \`q\` up to 65535
+* Support 16-bit wide operations
+* Generate a private key
+* Generate a public key
+* Encrypt a message bit
+* Decrypt an encrypted message
+* Encrypt a stream of serialised bits from a file
+* Consume a minimal board area and resource footprint (e.g. I/O, CLBs)
+
+***
+
+## **3.2. Design Choices and Assumptions**
+
+**<u>Board Selection</u>**
+
+![](/uploads/20211027-image35.png)
+
+<figcaption>Figure 3.2.1 - Kintex-7 Board Comparison. Source: [xilinx.com](https://www.xilinx.com/support/documentation/selection-guides/7-series-product-selection-guide.pdf)</figcaption>
+
+Within the Kintex-7 series of FPGA chips, the _xc7k70tfbv676-3_ was selected to be used for the implementation of the design. This is an entry-grade chip within the Kintex-7 series, with a logic cell count of 70,000 and available pin count of 676, which is of minimal size as when compared to more performant chips in the series. Consideration towards prioritising the reduction of area size and resource utilisation was sought after, whereby the minimal resource footprint of the implementation would guarantee that the designed system can be easily integrated into other packages without concern for I/O availability.
+
+**<u>HDL Language Choice</u>**
+
+As the majority of Team Orange's members were more comfortable with VHDL than Verilog, VHDL was the selected hardware description language to be used. Whilst Xilinx provides interoperability and cross-language compatibility to allow usage of both VHDL and Verilog; a singular language (VHDL) was enforced to establish a maintainable and shared understanding of the codebase.
+
+**<u>Design Rules and Assumptions</u>**
+
+Multi-cycle components will accept an input clock signal \`clk\`, and synchronise their operation to the rising edge of the clock. All clock signals will be backed from the same clock provider, as to provide unified synchronisation.
+
+Functional components (that is, components which perform an atomic function) that manage an internal state (i.e. for the execution of a multi-cycle task) should set up their state during the assertion of the reset signal \`rst\`, which, when deasserted will allow the component to execute on the very next cycle.
+
+To assert the completion of a functional component, a \`ready\` bit is to be implemented as an output signal. Once asserted, the functional component's output signals and internal state should no longer vary, and remain constant until the reset signal is asserted
+
+Components that require size \`m\`, or size \`n\` of a vector matrix should accept an input signal \`sizeM\` / \`sizeN\`. Similarly, components that are functionally dependent on the modulo value \`q\` should accept an input signal \`inQ\`
+
+As supported by prior MATLAB modelling analysis (Figure 2.5.1), size \`n\` should be a small number - but at least 32 (as required per assignment specification). To allow flexibility (should the user want to encode a value larger than 32, the implemented LWE design will accept 6 bits for the signal \`sizeN\` (max value of 26-1 = 63).
+
+For integrations of the LWE implementation in specific \`b\`-bit systems, the board area requirement will be optimised by providing the integrator a bus-width parameter \`width\` (whose default is 16). For example, when integrated with a bus-width of 8 bits, the LWE implementation synthesis will remove redundant I/O lanes that would otherwise only be used on a 16-bit system.
+
+***
+
+# **4. Datapath Design**
+
+![](/uploads/20211027-component_diagram-drawio_light.png)
+
+<figcaption>Figure 4.1 - Component Input/Output Diagram</figcaption>
+
+![](/uploads/20211027-image32.png)
+
+<figcaption>Figure 4.2 - Connection Diagram</figcaption>
+
+***
+
+# **5. Random Number Generation**
+
+## **5.1 Random Number Generator using LFSR**
+
+We used the Linear-Feedback Shift Register (LFSR) as our Random Number Generator. An LFSR is a cascade of flip-flop circuits, which takes in a linear function, such as exclusive OR, as the input.
+
+![](/uploads/20211027-image18.png)
+
+<figcaption>Figure 5.1 - Linear-Feedback Shift Register (LFSR)</figcaption>
+
+![](/uploads/20211027-image12.png)
+
+<figcaption>Figure 5.2 - Example of random numbers generated</figcaption>
+
+***
+
+## **5.2 Seed Generation for RNG**
+
+The random number generator takes in a fixed seed as an initial input that is passed into the _LFSR_ (linear feedback shift register). The output is then parsed through the _LFSR_ again multiple times to get the random numbers every clock cycle. This pseudo-random sequence of numbers is however the same each time the rng module is called.  
+To resolve this issue, the most simple and effective solution was to change the initial seed that is used each time when the reset signal is asserted to ‘1’. To get a different seed each time, the current date and time is extracted as a standard logic vector, and the bits are manipulated to create a random initial sixteen bit seed for the _LFSR_.
+
+![](/uploads/20211027-image38.png)
