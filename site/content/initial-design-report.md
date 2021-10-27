@@ -104,3 +104,23 @@ Figure 2.6.1 and Figure 2.6.2 demonstrate the increase in successful decryptions
 When testing increasing values of q against the parameter set \[m=45, n=65\], a comparison between n=65 and n=256 (i.e. Comparing Figure 2.6.1 and 2.7) reveals that a higher rate of successful decryptions is achieved when \`n\` is minimal. Conversely, a larger value of \`n\` decreases the accuracy of successful decryptions, thus \`n\` should be restricted to a small value.
 
 ***
+
+**<u>Discussion</u>**
+
+After the testing and analysis of the decryption accuracy given variations of \`m\`, \`n\` and \`q\`, several findings were established which have helped shape the design decisions for the implementation of the model onto the Kintex-7 FPGA board.
+
+It was noted that modifications to \`q\` were of the most impact (i.e. Figure 2.7), whereby increasing values of \`q\` greatly reduces the rate of unsuccessful message decryption given the private key. Hence the HDL implementation should utilise a relatively large value of \`q\` for optimal accuracy (albeit dependent on the combination of \`m\` and \`n\`)
+
+Increases to the size \`n\` was detrimental (i.e. Figure 2.5.1) as the accuracy of successful decryption (given the correct private key) decreased with increasing values of \`n\`. Whilst the negative impact on accuracy for larger values of \`n\` could be mitigated with larger values of \`q\`, the overall speed of the encryption and decryption routine is adversely impacted from growing values of \`n\`. As the LWE mechanism functions on a "per-bit" basis (that is, the LWE routine must be performed 8__*__ times per byte) it is of importance that the HDL implementation must use a small value of \`n\` to operate in acceptable time.
+
+> ___*___ _The ASCII character set (common printable characters) only occupies values 0-127, so each ASCII character can actually be represented as seven (7) bits instead of eight (8). However the time saved by having one less computation pales by an order of magnitude to the speed bottleneck of a large value of \`n\`_
+
+As evident from the above figures, the modification of \`m\` does not have a significant impact on the accuracy (nor speed) of the LWE method, hence the value \`m\` can be selected relatively freely.
+
+In conclusion, \`q\` should be maximised and \`n\` should be minimised to obtain optimal accuracy and speed for the LWE routine.
+
+**<u>Future Work</u>**
+
+The current MATLAB model incorporates an exact multiplier, whose computation time is slower when compared to an approximate multiplier. When the future MATLAB model that features an approximate multiplier in lieu of the exact multiplier is created, it will be worthwhile to perform timing tests to quantitatively compare the performance increase.
+
+***
